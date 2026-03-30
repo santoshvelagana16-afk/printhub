@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+{% block title %}Spiral Binding – PrintHub{% endblock %}
+{% block content %}
+
+<div class="page-hero">
+  <div class="container">
+    <p>PROFESSIONAL GRADE PRINTING & BINDING HUB</p>
+    <h1>OUR <span>SERVICES</span></h1>
+  </div>
+</div>
+
+<div class="service-tabs-bar">
+  <div class="container">
+    <div class="service-tabs">
+      <a href="{% url 'printing_service' %}" class="service-tab"><span class="tab-dot"></span>PRINTING</a>
+      <a href="{% url 'binding_service' %}" class="service-tab active"><span class="tab-dot"></span>SPIRAL</a>
+      <a href="{% url 'binding_service' %}" class="service-tab"><span class="tab-dot"></span>SOFT</a>
+      <a href="{% url 'custom_service' %}" class="service-tab"><span class="tab-dot"></span>CUSTOM</a>
+      <a href="{% url 'custom_service' %}" class="service-tab"><span class="tab-dot"></span>THEME <span class="tab-new ms-1">NEW</span></a>
+    </div>
+  </div>
+</div>
+
+<section class="section-pad">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-10 col-xl-9">
+        <form method="POST" enctype="multipart/form-data" id="bindForm">
+          {% csrf_token %}
+          {% for service in services %}<input type="radio" name="service_id" value="{{ service.id }}" {% if forloop.first %}checked{% endif %} style="display:none">{% endfor %}
+
+          <div class="form-card">
+            <div class="form-card-header">
+              <div class="form-card-header-icon" style="background:var(--green)"><i class="bi bi-journals"></i></div>
+              <h5 style="color:var(--green)">SPIRAL BINDING</h5>
+            </div>
+            <div class="form-card-body">
+              <div class="row g-3">
+                <div class="col-md-4 col-sm-6">
+                  <label class="form-label">YOUR NAME</label>
+                  <input type="text" name="customer_name" class="ph-input" placeholder="Full Name" value="{% if user.is_authenticated %}{{ user.get_full_name|default:user.username }}{% endif %}">
+                </div>
+                <div class="col-md-4 col-sm-6">
+                  <label class="form-label">MOBILE</label>
+                  <input type="tel" name="mobile" class="ph-input" placeholder="10-digit Number">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">UPLOAD DOCUMENT</label>
+                  <div class="file-upload-box" id="fileUploadBox" style="min-height:156px;">
+                    <input type="file" name="document" id="docFile" accept=".pdf,.doc,.docx">
+                    <div class="file-upload-icon" style="color:var(--green)"><i class="bi bi-cloud-upload"></i></div>
+                    <p>SELECT FILE</p>
+                    <p id="fileNameDisplay" class="file-name d-none"></p>
+                  </div>
+                </div>
+
+                <div class="col-12">
+                  <label class="form-label">BINDING TYPE</label>
+                  <div class="row g-2">
+                    <div class="col-6 col-md-3">
+                      <label class="option-radio-card">
+                        <input type="radio" name="binding_type" value="spiral" checked>
+                        <div class="option-inner"><i class="bi bi-circles-intersect"></i>Spiral<small>₹30/bind</small></div>
+                      </label>
+                    </div>
+                    <div class="col-6 col-md-3">
+                      <label class="option-radio-card">
+                        <input type="radio" name="binding_type" value="comb">
+                        <div class="option-inner"><i class="bi bi-layout-text-sidebar"></i>Comb<small>₹25/bind</small></div>
+                      </label>
+                    </div>
+                    <div class="col-6 col-md-3">
+                      <label class="option-radio-card">
+                        <input type="radio" name="binding_type" value="tape">
+                        <div class="option-inner"><i class="bi bi-layers"></i>Tape<small>₹20/bind</small></div>
+                      </label>
+                    </div>
+                    <div class="col-6 col-md-3">
+                      <label class="option-radio-card">
+                        <input type="radio" name="binding_type" value="hard">
+                        <div class="option-inner"><i class="bi bi-book"></i>Hard Cover<small>₹80/bind</small></div>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-md-4 col-sm-6">
+                  <label class="form-label">QUANTITY</label>
+                  <input type="number" name="quantity" id="qty" class="ph-input" min="1" value="1">
+                </div>
+                <div class="col-md-4 col-sm-6">
+                  <label class="form-label">LOCATION</label>
+                  <select name="location" id="locationSelect" class="ph-select">
+                    <option value="">Select...</option>
+                    <option value="kakinada">Kakinada</option>
+                    <option value="rajahmundry">Rajahmundry</option>
+                    <option value="vizag">Visakhapatnam</option>
+                    <option value="pickup">Store Pickup</option>
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">DELIVERY SPEED</label>
+                  <select name="delivery_speed" id="deliverySpeed" class="ph-select" disabled>
+                    <option>Select location first...</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="cost-bar">
+              <div class="cost-bar-item">Binding Cost: <span id="bindCost">₹0.00</span></div>
+              <div class="cost-bar-item">Quantity: <span id="qtyDisplay">1</span></div>
+            </div>
+
+            <div class="cost-summary-footer">
+              <div class="cost-summary-grid">
+                <div class="cost-summary-item">Spiral<b>₹30/bind</b></div>
+                <div class="cost-summary-item">Comb<b>₹25/bind</b></div>
+                <div class="cost-summary-item">Tape<b>₹20/bind</b></div>
+                <div class="cost-summary-item">Hard Cover<b>₹80/bind</b></div>
+              </div>
+              <div class="total-payable">
+                <div class="label">TOTAL PAYABLE AMOUNT</div>
+                <div class="amount">₹<span id="totalAmt">0.00</span></div>
+              </div>
+              <div class="d-flex align-items-center gap-2 ms-2">
+                <button type="button" class="btn-add-cart" onclick="submitCart()"><i class="bi bi-cart-plus me-1"></i>ADD TO CART</button>
+                <button type="submit" class="btn-order-now" style="background:var(--green);box-shadow:0 4px 14px rgba(16,185,129,.35)"><i class="bi bi-bag-check me-1"></i>ORDER NOW</button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const BIND_PRICES = { spiral:30, comb:25, tape:20, hard:80 };
+const deliveryOpts = { kakinada:['Express (2 hrs) – ₹30','Standard – ₹20'], rajahmundry:['Standard – ₹40'], vizag:['Standard – ₹60'], pickup:['Store Pickup – Free'] };
+
+function calc() {
+  const type = document.querySelector('input[name="binding_type"]:checked')?.value || 'spiral';
+  const qty  = Math.max(1, parseInt(document.getElementById('qty').value)||1);
+  const total = BIND_PRICES[type] * qty;
+  document.getElementById('bindCost').textContent = '₹'+total.toFixed(2);
+  document.getElementById('qtyDisplay').textContent = qty;
+  document.getElementById('totalAmt').textContent = total.toFixed(2);
+}
+document.querySelectorAll('input[name="binding_type"]').forEach(r=>r.addEventListener('change',calc));
+document.getElementById('qty').addEventListener('input',calc);
+document.getElementById('locationSelect').addEventListener('change',function(){
+  const sel=document.getElementById('deliverySpeed');
+  const opts=deliveryOpts[this.value]||[];
+  sel.innerHTML=opts.length?opts.map(o=>`<option>${o}</option>`).join(''):'<option>Select location first...</option>';
+  sel.disabled=!opts.length;
+});
+const fileBox=document.getElementById('fileUploadBox'),fi=document.getElementById('docFile');
+fi.addEventListener('change',function(){if(this.files.length){document.getElementById('fileNameDisplay').textContent=this.files[0].name;document.getElementById('fileNameDisplay').classList.remove('d-none');fileBox.classList.add('has-file');fileBox.querySelector('p').textContent='File selected ✓';}});
+function submitCart(){const f=document.getElementById('bindForm');let h=f.querySelector('input[name="add_to_cart"]');if(!h){h=document.createElement('input');h.type='hidden';h.name='add_to_cart';f.appendChild(h);}h.value='1';f.submit();}
+calc();
+</script>
+{% endblock %}

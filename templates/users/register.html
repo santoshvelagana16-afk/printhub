@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block title %}Create Account – PrintHub{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-6 col-md-8">
+        <div class="auth-card">
+          <div class="auth-logo-wrap">
+            <div class="auth-logo-box"><i class="bi bi-printer-fill"></i></div>
+            <h3>Create Account</h3>
+            <p class="sub">Join PrintHub and start printing today</p>
+          </div>
+          <form method="POST" novalidate>
+            {% csrf_token %}
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">FIRST NAME</label>
+                <input type="text" name="first_name" class="ph-input" placeholder="First name" value="{{ form.first_name.value|default:'' }}">
+                {% for e in form.first_name.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">LAST NAME</label>
+                <input type="text" name="last_name" class="ph-input" placeholder="Last name" value="{{ form.last_name.value|default:'' }}">
+              </div>
+              <div class="col-12">
+                <label class="form-label">USERNAME</label>
+                <div class="ph-input-group">
+                  <i class="bi bi-at ph-input-icon"></i>
+                  <input type="text" name="username" class="ph-input {% if form.username.errors %}is-invalid{% endif %}" placeholder="Choose a username" value="{{ form.username.value|default:'' }}">
+                </div>
+                {% for e in form.username.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+              </div>
+              <div class="col-12">
+                <label class="form-label">EMAIL ADDRESS</label>
+                <div class="ph-input-group">
+                  <i class="bi bi-envelope ph-input-icon"></i>
+                  <input type="email" name="email" class="ph-input" placeholder="your@email.com" value="{{ form.email.value|default:'' }}">
+                </div>
+              </div>
+              <div class="col-12">
+                <label class="form-label">MOBILE NUMBER</label>
+                <div class="ph-input-group">
+                  <i class="bi bi-phone ph-input-icon"></i>
+                  <input type="tel" name="phone" class="ph-input" placeholder="+91 XXXXX XXXXX">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">PASSWORD</label>
+                <div class="ph-input-group">
+                  <input type="password" name="password1" id="p1" class="ph-input {% if form.password1.errors %}is-invalid{% endif %}" placeholder="Create password">
+                  <button type="button" class="ph-input-toggle" onclick="togglePwd('p1',this)"><i class="bi bi-eye"></i></button>
+                </div>
+                {% for e in form.password1.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">CONFIRM PASSWORD</label>
+                <div class="ph-input-group">
+                  <input type="password" name="password2" id="p2" class="ph-input {% if form.password2.errors %}is-invalid{% endif %}" placeholder="Repeat password">
+                  <button type="button" class="ph-input-toggle" onclick="togglePwd('p2',this)"><i class="bi bi-eye"></i></button>
+                </div>
+                {% for e in form.password2.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+              </div>
+              <div class="col-12">
+                <button type="submit" class="btn-auth"><i class="bi bi-person-check me-2"></i>CREATE ACCOUNT</button>
+              </div>
+              <div class="col-12 text-center" style="font-size:0.85rem;color:var(--text-muted)">
+                Already have an account? <a href="{% url 'login' %}" class="auth-link">Sign In</a>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

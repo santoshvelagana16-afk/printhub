@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% block title %}My Cart – PrintHub{% endblock %}
+{% block content %}
+<div class="page-hero"><div class="container"><p>SHOPPING</p><h1>MY <span>CART</span></h1></div></div>
+<section class="section-pad">
+  <div class="container">
+    {% if items %}
+    <div class="row g-4">
+      <div class="col-lg-8">
+        {% for item in items %}{% with c=item.get_config %}
+        <div class="cart-item-card">
+          <div class="d-flex gap-3 align-items-start">
+            <div class="cart-item-ico">
+              <i class="bi bi-{% if c.service_type == 'printing' %}printer{% elif c.service_type == 'binding' %}journals{% else %}palette{% endif %}"></i>
+            </div>
+            <div class="flex-grow-1">
+              <div class="fw-800 mb-1" style="color:var(--navy)">{{ item.service.name }}</div>
+              <div class="d-flex flex-wrap gap-1 mb-2">
+                {% if c.service_type == 'printing' %}
+                  <span class="cart-tag">{{ c.pages }} pages</span>
+                  <span class="cart-tag">{{ c.copies }} copies</span>
+                  <span class="cart-tag">{{ c.color|upper }}</span>
+                  <span class="cart-tag">{{ c.page_size }}</span>
+                  <span class="cart-tag">{{ c.sides|title }}</span>
+                {% elif c.service_type == 'binding' %}
+                  <span class="cart-tag">{{ c.binding_type|title }}</span>
+                  <span class="cart-tag">Qty {{ c.quantity }}</span>
+                {% elif c.service_type == 'custom' %}
+                  <span class="cart-tag">{{ c.product_type|title }}</span>
+                  <span class="cart-tag">Size {{ c.size }}</span>
+                  <span class="cart-tag">Qty {{ c.quantity }}</span>
+                {% endif %}
+              </div>
+
+              <!-- ── UPLOADED FILE ── -->
+              {% if item.uploaded_file or item.file_name %}
+              <div class="cart-file-box">
+                <div class="cart-file-inner">
+                  {% with fname=item.file_name|lower %}
+                  {% if '.pdf' in fname %}
+                    <i class="bi bi-file-earmark-pdf-fill" style="color:#ef4444;font-size:1.3rem;flex-shrink:0"></i>
+                  {% elif '.doc' in fname or '.docx' in fname %}
+                    <i class="bi bi-file-earmark-word-fill" style="color:#2563eb;font-size:1.3rem;flex-shrink:0"></i>
+                  {% elif '.jpg' in fname or '.jpeg' in fname or '.png' in fname %}
+                    <i class="bi bi-file-earmark-image-fill" style="color:#10b981;font-size:1.3rem;flex-shrink:0"></i>
+                  {% else %}
+                    <i class="bi bi-file-earmark-fill" style="color:#6b7280;font-size:1.3rem;flex-shrink:0"></i>
+                  {% endif %}
+                  {% endwith %}
+                  <div style="flex:1;min-width:0;">
+                    <div style="font-weight:800;font-size:0.82rem;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                      {{ item.file_name|default:"Uploaded file" }}
+                    </div>
+                    <div style="font-size:0.72rem;color:var(--text-muted);font-weight:600;">Attached to this order</div>
+                  </div>
+                  {% if item.uploaded_file %}
+                  <a href="{{ item.uploaded_file.url }}" download="{{ item.file_name }}"
+                     style="display:inline-flex;align-items:center;gap:4px;padding:4px 12px;background:rgba(16,185,129,.1);color:var(--green);border-radius:50px;font-size:0.75rem;font-weight:800;text-decoration:none;flex-shrink:0;"
+                     title="Download uploaded file">
+                    <i class="bi bi-download"></i> Download
+                  </a>
+                  {% endif %}
+                </div>
+              </div>
+              {% endif %}
+
+            </div>
+            <div class="text-end" style="flex-shrink:0">
+              <div class="cart-price">₹{{ item.total_price }}</div>
+              <div style="font-size:0.78rem;color:var(--text-muted)">₹{{ item.unit_price }} each</div>
+              <a href="{% url 'remove_cart_item' item.id %}"
+                 class="btn-add-cart mt-2 d-inline-flex align-items-center gap-1"
+                 style="font-size:0.78rem;padding:5px 14px;color:var(--red);border-color:var(--red);text-decoration:none"
+                 onclick="return confirm('Remove this item?')">
+                <i class="bi bi-trash"></i>Remove
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endwith %}{% endfor %}
+      </div>
+
+      <!-- Order Summary -->
+      <div class="col-lg-4">
+        <div class="order-summary-card sticky-top" style="top:80px">
+          <div class="fw-800 mb-3" style="font-size:1rem;color:var(--navy);text-transform:uppercase;letter-spacing:.5px">Order Summary</div>
+          <div class="summary-row"><span style="color:var(--text-muted)">Subtotal ({{ items|length }} item{{ items|length|pluralize }})</span><span class="fw-700">₹{{ cart.get_total }}</span></div>
+          <div class="summary-row"><span style="color:var(--text-muted)">GST (18%)</span><span class="fw-700">Included</span></div>
+          <div class="summary-row total"><span>Total</span><span class="summary-total-amt">₹{{ cart.get_total }}</span></div>
+          <a href="{% url 'payment' %}" class="btn-order-now w-100 mt-3 d-block text-center"
+             style="text-decoration:none;border-radius:50px;padding:11px">
+            <i class="bi bi-credit-card me-2"></i>PROCEED TO PAYMENT
+          </a>
+          <a href="{% url 'services' %}" class="btn-add-cart w-100 mt-2 d-block text-center"
+             style="text-decoration:none;border-radius:50px;padding:10px">
+            <i class="bi bi-plus me-1"></i>ADD MORE SERVICES
+          </a>
+        </div>
+      </div>
+    </div>
+
+    {% else %}
+    <div class="empty-state">
+      <i class="bi bi-cart-x"></i>
+      <h4>Your cart is empty</h4>
+      <p>Add printing services to get started</p>
+      <a href="{% url 'services' %}" class="btn-order-now mt-3 d-inline-flex align-items-center gap-2"
+         style="text-decoration:none"><i class="bi bi-grid"></i>Browse Services</a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.cart-file-box {
+  background: #f8f9fc;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+.cart-file-inner {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px;
+}
+</style>
+{% endblock %}

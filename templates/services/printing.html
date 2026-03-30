@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+{% block title %}Printing – PrintHub{% endblock %}
+{% block content %}
+
+<div class="page-hero">
+  <div class="container">
+    <p>PROFESSIONAL GRADE PRINTING & BINDING HUB</p>
+    <h1>OUR <span>SERVICES</span></h1>
+  </div>
+</div>
+
+<div class="service-tabs-bar">
+  <div class="container">
+    <div class="service-tabs">
+      <a href="{% url 'printing_service' %}" class="service-tab active"><span class="tab-dot"></span>PRINTING</a>
+      <a href="{% url 'binding_service' %}" class="service-tab"><span class="tab-dot"></span>SPIRAL</a>
+      <a href="{% url 'binding_service' %}" class="service-tab"><span class="tab-dot"></span>SOFT</a>
+      <a href="{% url 'custom_service' %}" class="service-tab"><span class="tab-dot"></span>CUSTOM</a>
+      <a href="{% url 'custom_service' %}" class="service-tab"><span class="tab-dot"></span>THEME <span class="tab-new ms-1">NEW</span></a>
+    </div>
+  </div>
+</div>
+
+<section class="section-pad">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-10 col-xl-9">
+        <form method="POST" enctype="multipart/form-data" id="printForm">
+          {% csrf_token %}
+          {% for service in services %}<input type="radio" name="service_id" value="{{ service.id }}" {% if forloop.first %}checked{% endif %} style="display:none">{% endfor %}
+
+          <div class="form-card">
+            <div class="form-card-header">
+              <div class="form-card-header-icon"><i class="bi bi-printer-fill"></i></div>
+              <h5>PRINTING</h5>
+            </div>
+            <div class="form-card-body">
+              <div class="row g-3">
+
+                <div class="col-md-4 col-sm-6">
+                  <label class="form-label">YOUR NAME</label>
+                  <input type="text" name="customer_name" class="ph-input" placeholder="Full Name" value="{% if user.is_authenticated %}{{ user.get_full_name|default:user.username }}{% endif %}">
+                </div>
+                <div class="col-md-4 col-sm-6">
+                  <label class="form-label">MOBILE</label>
+                  <input type="tel" name="mobile" class="ph-input" placeholder="10-digit Number">
+                </div>
+                <div class="col-md-4" rowspan="3">
+                  <label class="form-label">UPLOAD PDF OR IMAGE</label>
+                  <div class="file-upload-box" id="fileUploadBox" style="min-height:156px;">
+                    <input type="file" name="document" id="docFile" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                    <div class="file-upload-icon"><i class="bi bi-cloud-upload"></i></div>
+                    <p>SELECT FILE</p>
+                    <p id="fileNameDisplay" class="file-name d-none"></p>
+                  </div>
+                </div>
+
+                <div class="col-md-4 col-sm-6">
+                  <label class="form-label">TYPE</label>
+                  <select name="color" id="colorSelect" class="ph-select">
+                    <option value="bw">Black & White</option>
+                    <option value="color">Full Colour</option>
+                  </select>
+                </div>
+                <div class="col-md-4 col-sm-6">
+                  <label class="form-label">SIDES (S)</label>
+                  <select name="sides" id="sidesSelect" class="ph-select">
+                    <option value="single">Select...</option>
+                    <option value="single">Single Side</option>
+                    <option value="double">Double Side</option>
+                  </select>
+                </div>
+
+                <div class="col-md-4 col-sm-6">
+                  <label class="form-label">COPIES</label>
+                  <input type="number" name="copies" id="copies" class="ph-input" min="1" value="1">
+                </div>
+                <div class="col-md-4 col-sm-6">
+                  <label class="form-label">LOCATION</label>
+                  <select name="location" id="locationSelect" class="ph-select">
+                    <option value="">Select...</option>
+                    <option value="kakinada">Kakinada</option>
+                    <option value="rajahmundry">Rajahmundry</option>
+                    <option value="vizag">Visakhapatnam</option>
+                    <option value="pickup">Store Pickup</option>
+                  </select>
+                </div>
+
+                <div class="col-md-4 col-sm-6">
+                  <label class="form-label">TOTAL PAGES</label>
+                  <input type="number" name="pages" id="pages" class="ph-input" min="1" value="1">
+                </div>
+
+                <div class="col-md-4 col-sm-6">
+                  <label class="form-label">PAGE SIZE</label>
+                  <select name="page_size" id="pageSizeSelect" class="ph-select">
+                    <option value="A4">A4</option>
+                    <option value="A3">A3</option>
+                    <option value="Letter">Letter</option>
+                    <option value="Legal">Legal</option>
+                  </select>
+                </div>
+
+                <div class="col-12">
+                  <label class="form-label">DELIVERY SPEED</label>
+                  <select name="delivery_speed" id="deliverySpeed" class="ph-select" disabled>
+                    <option value="">Select location first...</option>
+                  </select>
+                </div>
+
+              </div>
+            </div>
+
+            <div class="cost-bar">
+              <div class="cost-bar-item">B&W Cost: <span id="bwCost">₹0.00</span></div>
+              <div class="cost-bar-item" style="color:var(--red)">Color Cost: <span id="colorCost">₹0.00</span></div>
+              <div class="ms-auto">
+                <i class="bi bi-info-circle-fill" style="color:var(--blue);font-size:1.4rem;cursor:pointer;" title="Click to see pricing"></i>
+              </div>
+            </div>
+
+            <div class="cost-summary-footer">
+              <div class="cost-summary-grid">
+                <div class="cost-summary-item">B&W (S): ₹2/P<b id="sumBW1">B&W (1): ₹2/P</b></div>
+                <div class="cost-summary-item">B&W (D): ₹2/P<b id="sumBW2">B&W (2): ₹2/P</b></div>
+                <div class="cost-summary-item">COLOR (S): ₹10/P<b id="sumC1">COLOR (1): ₹10/P</b></div>
+                <div class="cost-summary-item">COLOR (D): ₹10/P<b id="sumC2">COLOR (2): ₹10/P</b></div>
+              </div>
+              <div class="total-payable">
+                <div class="label">TOTAL PAYABLE AMOUNT</div>
+                <div class="amount">₹<span id="totalAmt">0.00</span></div>
+              </div>
+              <div class="d-flex align-items-center gap-2 ms-2">
+                <button type="button" class="btn-add-cart" onclick="submitCart()"><i class="bi bi-cart-plus me-1"></i>ADD TO CART</button>
+                <button type="submit" class="btn-order-now"><i class="bi bi-bag-check me-1"></i>ORDER NOW</button>
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <div class="row g-3 mt-4">
+          <div class="col-md-6">
+            <div class="form-card p-3">
+              <div class="d-flex align-items-center gap-2 mb-3">
+                <div class="form-card-header-icon"><i class="bi bi-info-circle"></i></div>
+                <strong style="font-size:0.82rem;text-transform:uppercase;letter-spacing:0.5px;color:var(--navy)">B&W Pricing</strong>
+              </div>
+              <table class="w-100" style="font-size:0.82rem;">
+                <tr style="color:var(--text-muted);font-weight:700;font-size:0.75rem;text-transform:uppercase;"><td class="pb-2">Size</td><td class="pb-2">Single Side</td><td class="pb-2">Double Side</td></tr>
+                <tr class="border-top"><td class="py-1 fw-600">A4</td><td>₹0.50/pg</td><td>₹0.90/pg</td></tr>
+                <tr class="border-top"><td class="py-1 fw-600">A3</td><td>₹1.00/pg</td><td>₹1.80/pg</td></tr>
+                <tr class="border-top"><td class="py-1 fw-600">Letter</td><td>₹0.50/pg</td><td>₹0.90/pg</td></tr>
+                <tr class="border-top"><td class="py-1 fw-600">Legal</td><td>₹0.75/pg</td><td>₹1.40/pg</td></tr>
+              </table>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-card p-3">
+              <div class="d-flex align-items-center gap-2 mb-3">
+                <div class="form-card-header-icon" style="background:var(--red)"><i class="bi bi-palette"></i></div>
+                <strong style="font-size:0.82rem;text-transform:uppercase;letter-spacing:0.5px;color:var(--navy)">Colour Pricing</strong>
+              </div>
+              <table class="w-100" style="font-size:0.82rem;">
+                <tr style="color:var(--text-muted);font-weight:700;font-size:0.75rem;text-transform:uppercase;"><td class="pb-2">Size</td><td class="pb-2">Single Side</td><td class="pb-2">Double Side</td></tr>
+                <tr class="border-top"><td class="py-1 fw-600">A4</td><td>₹3.00/pg</td><td>₹5.50/pg</td></tr>
+                <tr class="border-top"><td class="py-1 fw-600">A3</td><td>₹6.00/pg</td><td>₹11.00/pg</td></tr>
+                <tr class="border-top"><td class="py-1 fw-600">Letter</td><td>₹3.00/pg</td><td>₹5.50/pg</td></tr>
+                <tr class="border-top"><td class="py-1 fw-600">Legal</td><td>₹4.00/pg</td><td>₹7.50/pg</td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const PRICE = {
+  bw:    { single:{A4:.5,A3:1,Letter:.5,Legal:.75},    double:{A4:.9,A3:1.8,Letter:.9,Legal:1.4} },
+  color: { single:{A4:3,A3:6,Letter:3,Legal:4},        double:{A4:5.5,A3:11,Letter:5.5,Legal:7.5} }
+};
+const deliveryOpts = {
+  kakinada:    ['Express (2 hrs) – ₹30','Standard (Same Day) – ₹20','Economy (Next Day) – Free'],
+  rajahmundry: ['Standard (Next Day) – ₹40','Economy (2 Days) – ₹25'],
+  vizag:       ['Standard (2 Days) – ₹60','Economy (3 Days) – ₹40'],
+  pickup:      ['Store Pickup – Free']
+};
+
+function calc() {
+  const color = document.getElementById('colorSelect').value;
+  const sides = document.getElementById('sidesSelect').value || 'single';
+  const size  = document.getElementById('pageSizeSelect').value;
+  const pages = Math.max(1, parseInt(document.getElementById('pages').value)||1);
+  const copies= Math.max(1, parseInt(document.getElementById('copies').value)||1);
+  const ppg   = PRICE[color][sides][size] || 0;
+  const total = ppg * pages * copies;
+
+  document.getElementById('bwCost').textContent    = color==='bw'    ? '₹'+total.toFixed(2) : '₹0.00';
+  document.getElementById('colorCost').textContent = color==='color' ? '₹'+total.toFixed(2) : '₹0.00';
+  document.getElementById('totalAmt').textContent  = total.toFixed(2);
+
+  ['A4','A3','Letter','Legal'].forEach(sz => {
+    const bwS  = (PRICE.bw.single[sz]*pages*copies).toFixed(2);
+    const bwD  = (PRICE.bw.double[sz]*pages*copies).toFixed(2);
+    const cS   = (PRICE.color.single[sz]*pages*copies).toFixed(2);
+    const cD   = (PRICE.color.double[sz]*pages*copies).toFixed(2);
+    if(sz===size){
+      document.getElementById('sumBW1').textContent = `B&W (S): ₹${bwS}`;
+      document.getElementById('sumBW2').textContent = `B&W (D): ₹${bwD}`;
+      document.getElementById('sumC1').textContent  = `COLOR (S): ₹${cS}`;
+      document.getElementById('sumC2').textContent  = `COLOR (D): ₹${cD}`;
+    }
+  });
+}
+
+['colorSelect','sidesSelect','pageSizeSelect'].forEach(id => document.getElementById(id).addEventListener('change', calc));
+['pages','copies'].forEach(id => document.getElementById(id).addEventListener('input', calc));
+
+document.getElementById('locationSelect').addEventListener('change', function() {
+  const sel = document.getElementById('deliverySpeed');
+  const opts = deliveryOpts[this.value] || [];
+  sel.innerHTML = opts.length ? opts.map(o=>`<option>${o}</option>`).join('') : '<option value="">Select location first...</option>';
+  sel.disabled = !opts.length;
+});
+
+const fileBox   = document.getElementById('fileUploadBox');
+const fileInput = document.getElementById('docFile');
+const fileDisp  = document.getElementById('fileNameDisplay');
+fileInput.addEventListener('change', function() {
+  if (this.files.length) {
+    fileDisp.textContent = this.files[0].name;
+    fileDisp.classList.remove('d-none');
+    fileBox.classList.add('has-file');
+    fileBox.querySelector('p').textContent = 'File selected ✓';
+  }
+});
+fileBox.addEventListener('dragover', e => { e.preventDefault(); fileBox.classList.add('dragover'); });
+fileBox.addEventListener('dragleave', () => fileBox.classList.remove('dragover'));
+fileBox.addEventListener('drop', e => { e.preventDefault(); fileBox.classList.remove('dragover'); if(e.dataTransfer.files.length){fileInput.files=e.dataTransfer.files;fileInput.dispatchEvent(new Event('change'));} });
+
+function submitCart() {
+  const f = document.getElementById('printForm');
+  let h = f.querySelector('input[name="add_to_cart"]');
+  if(!h){h=document.createElement('input');h.type='hidden';h.name='add_to_cart';f.appendChild(h);} h.value='1'; f.submit();
+}
+calc();
+</script>
+{% endblock %}

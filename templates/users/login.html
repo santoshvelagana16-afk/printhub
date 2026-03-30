@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Sign In – PrintHub{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-5 col-md-7">
+        <div class="auth-card">
+          <div class="auth-logo-wrap">
+            <div class="auth-logo-box"><i class="bi bi-printer-fill"></i></div>
+            <h3>Welcome Back</h3>
+            <p class="sub">Sign in to your PrintHub account</p>
+          </div>
+          <form method="POST" novalidate>
+            {% csrf_token %}
+            <div class="mb-3">
+              <label class="form-label">USERNAME</label>
+              <div class="ph-input-group">
+                <i class="bi bi-person ph-input-icon"></i>
+                <input type="text" name="username" class="ph-input {% if form.username.errors %}is-invalid{% endif %}" placeholder="Enter your username" value="{{ form.username.value|default:'' }}">
+              </div>
+              {% for e in form.username.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+            </div>
+            <div class="mb-4">
+              <label class="form-label">PASSWORD</label>
+              <div class="ph-input-group">
+                <i class="bi bi-lock ph-input-icon"></i>
+                <input type="password" name="password" id="pwdField" class="ph-input {% if form.non_field_errors %}is-invalid{% endif %}" placeholder="Enter your password">
+                <button type="button" class="ph-input-toggle" onclick="togglePwd('pwdField',this)"><i class="bi bi-eye"></i></button>
+              </div>
+              {% for e in form.non_field_errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+            </div>
+            <button type="submit" class="btn-auth mb-3"><i class="bi bi-box-arrow-in-right me-2"></i>SIGN IN</button>
+            <p class="text-center" style="font-size:0.85rem;color:var(--text-muted)">Don't have an account? <a href="{% url 'register' %}" class="auth-link">Create one free</a></p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

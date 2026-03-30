@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}My Orders – PrintHub{% endblock %}
+{% block content %}
+<div class="page-hero"><div class="container"><p>ACCOUNT</p><h1>MY <span>ORDERS</span></h1></div></div>
+<section class="section-pad">
+  <div class="container">
+    {% if orders %}
+    {% for order in orders %}
+    <div class="order-row-card">
+      <div class="row align-items-center g-2">
+        <div class="col-md-3"><div class="fw-800" style="color:var(--navy)">#{{ order.order_number }}</div><div style="font-size:0.78rem;color:var(--text-muted)">{{ order.created_at|date:"d M Y" }}</div></div>
+        <div class="col-md-3"><span class="badge status-{{ order.status }} px-3 py-2" style="font-size:0.78rem;">{{ order.get_status_display }}</span></div>
+        <div class="col-md-2"><div style="font-size:0.8rem;color:var(--text-muted)">{{ order.items.count }} item{{ order.items.count|pluralize }}</div><div class="fw-800" style="color:var(--blue)">₹{{ order.total_amount }}</div></div>
+        <div class="col-md-2"><div style="font-size:0.78rem;color:var(--text-muted)">{{ order.get_payment_method_display }}</div><div style="font-size:0.78rem;color:var(--green);font-weight:700"><i class="bi bi-check-circle me-1"></i>{{ order.payment_status|title }}</div></div>
+        <div class="col-md-2 text-md-end d-flex gap-2 justify-content-md-end">
+          <a href="{% url 'order_detail' order.id %}" class="btn-add-cart" style="font-size:0.78rem;padding:6px 14px;text-decoration:none">Details</a>
+          <a href="{% url 'order_tracking' order.order_number %}" class="btn-order-now" style="font-size:0.78rem;padding:6px 14px;text-decoration:none">Track</a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="empty-state"><i class="bi bi-bag-x"></i><h4>No orders yet</h4><p>Place your first printing order today!</p><a href="{% url 'services' %}" class="btn-order-now mt-3 d-inline-flex align-items-center gap-2" style="text-decoration:none"><i class="bi bi-grid"></i>Browse Services</a></div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

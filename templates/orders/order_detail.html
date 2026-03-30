@@ -1,0 +1,499 @@
+{% extends 'base.html' %}
+{% block title %}Order #{{ order.order_number }} – PrintHub{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── File display card ─────────────────────────── */
+.file-display-box {
+  background: #f8f9fc;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color .2s;
+}
+.file-display-box:hover { border-color: var(--blue); }
+.file-display-inner {
+  display: flex; align-items: center; gap: 14px; padding: 12px 16px;
+}
+.file-type-icon {
+  width: 46px; height: 46px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem; flex-shrink: 0;
+}
+.file-type-icon.pdf    { background: rgba(239,68,68,.1);   color: #ef4444; }
+.file-type-icon.doc    { background: rgba(37,99,235,.1);   color: #2563eb; }
+.file-type-icon.img    { background: rgba(16,185,129,.1);  color: #10b981; }
+.file-type-icon.design { background: rgba(245,158,11,.1);  color: #f59e0b; }
+.file-type-icon.other  { background: rgba(107,114,128,.1); color: #6b7280; }
+
+.file-display-info { flex: 1; min-width: 0; }
+.file-display-name {
+  font-weight: 800; font-size: 0.88rem; color: var(--navy);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.file-display-meta { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; margin-top: 2px; }
+.file-display-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+.file-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 14px; border-radius: 50px;
+  font-size: 0.78rem; font-weight: 700;
+  cursor: pointer; border: none; transition: all .2s;
+  font-family: 'Nunito', sans-serif; text-decoration: none;
+}
+.preview-btn   { background: var(--blue-light); color: var(--blue); }
+.preview-btn:hover { background: var(--blue); color: #fff; }
+.download-btn  { background: rgba(16,185,129,.1); color: var(--green); }
+.download-btn:hover { background: var(--green); color: #fff; }
+
+.no-file-box {
+  background: #f8f9fc; border: 1.5px dashed var(--border);
+  border-radius: 10px; padding: 10px 14px;
+  font-size: 0.8rem; color: var(--text-light); font-weight: 600;
+}
+
+/* ── PDF.js canvas area ────────────────────────── */
+#pdfCanvasWrap {
+  background: #525659;
+  width: 100%; min-height: 500px;
+  overflow-y: auto; overflow-x: auto;
+  display: flex; flex-direction: column;
+  align-items: center; padding: 20px 0; gap: 12px;
+}
+#pdfCanvasWrap canvas {
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+  display: block;
+}
+.pdf-toolbar {
+  background: var(--navy); color: #fff;
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 20px; flex-wrap: wrap;
+  font-size: 0.82rem; font-weight: 700;
+}
+.pdf-toolbar button {
+  background: rgba(255,255,255,0.1); border: none; color: #fff;
+  border-radius: 6px; padding: 5px 12px; cursor: pointer;
+  font-size: 0.8rem; font-weight: 700; transition: background .2s;
+  font-family: 'Nunito', sans-serif;
+}
+.pdf-toolbar button:hover { background: var(--blue); }
+.pdf-toolbar button:disabled { opacity: .35; cursor: not-allowed; }
+.pdf-toolbar input[type=number] {
+  width: 52px; text-align: center; background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2); color: #fff;
+  border-radius: 6px; padding: 4px 6px; font-size: 0.82rem;
+  font-family: 'Nunito', sans-serif;
+}
+.pdf-page-count { opacity: .65; }
+
+/* ── Image preview ─────────────────────────────── */
+#imgPreviewWrap {
+  background: #1a1a2e; width: 100%;
+  display: flex; align-items: center; justify-content: center;
+  min-height: 400px; padding: 20px;
+}
+#imgPreviewWrap img {
+  max-width: 100%; max-height: 78vh;
+  object-fit: contain; border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+
+/* ── Modal overrides ───────────────────────────── */
+#filePreviewModal .modal-dialog { max-width: 900px; }
+#filePreviewModal .modal-content { border: none; border-radius: 16px; overflow: hidden; }
+#filePreviewModal .modal-header  {
+  background: var(--navy); border: none; padding: 14px 20px;
+}
+#filePreviewModal .modal-footer  {
+  background: #f8f9fa; border: none; padding: 12px 20px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div>
+        <p style="margin:0;opacity:.7;font-size:.75rem;font-weight:700;letter-spacing:1px;">ORDER DETAILS</p>
+        <h1 style="margin:0">ORDER <span>#{{ order.order_number }}</span></h1>
+      </div>
+      <span class="badge status-{{ order.status }} px-3 py-2" style="font-size:0.82rem;">{{ order.get_status_display }}</span>
+    </div>
+  </div>
+</div>
+
+<section class="section-pad">
+  <div class="container">
+    <div class="row g-4">
+
+      <!-- Left column -->
+      <div class="col-lg-8">
+
+        <!-- ITEMS ORDERED -->
+        <div class="form-card mb-4">
+          <div class="form-card-header">
+            <div class="form-card-header-icon"><i class="bi bi-list-ul"></i></div>
+            <h5>ITEMS ORDERED</h5>
+          </div>
+          <div class="form-card-body p-0">
+            {% for item in order.items.all %}{% with c=item.get_config %}
+            <div style="padding:18px 24px;border-bottom:1px solid var(--border);">
+              <div class="d-flex gap-3 align-items-start">
+
+                <!-- Icon -->
+                <div style="width:44px;height:44px;background:var(--blue-light);border-radius:10px;
+                            display:flex;align-items:center;justify-content:center;
+                            color:var(--blue);font-size:1.2rem;flex-shrink:0">
+                  <i class="bi bi-{% if c.service_type == 'printing' %}printer{% elif c.service_type == 'binding' %}journals{% else %}palette{% endif %}"></i>
+                </div>
+
+                <div class="flex-grow-1">
+                  <div class="fw-800 mb-2" style="color:var(--navy);font-size:0.95rem">{{ item.service.name }}</div>
+
+                  <!-- Config tags -->
+                  <div class="d-flex flex-wrap gap-1 mb-3">
+                    {% if c.service_type == 'printing' %}
+                      <span class="order-config-tag"><i class="bi bi-file-text me-1"></i>{{ c.pages }} pages</span>
+                      <span class="order-config-tag"><i class="bi bi-files me-1"></i>{{ c.copies }} copies</span>
+                      <span class="order-config-tag">{{ c.color|upper }}</span>
+                      <span class="order-config-tag">{{ c.page_size }}</span>
+                      <span class="order-config-tag">{{ c.sides|title }} side</span>
+                    {% elif c.service_type == 'binding' %}
+                      <span class="order-config-tag">{{ c.binding_type|title }} binding</span>
+                      <span class="order-config-tag">Qty: {{ c.quantity }}</span>
+                    {% elif c.service_type == 'custom' %}
+                      <span class="order-config-tag">{{ c.product_type|title }}</span>
+                      <span class="order-config-tag">Size: {{ c.size }}</span>
+                      <span class="order-config-tag">Qty: {{ c.quantity }}</span>
+                    {% endif %}
+                  </div>
+
+                  <!-- FILE DISPLAY -->
+                  {% if item.uploaded_file or item.file_name %}
+                  <div class="file-display-box">
+                    <div class="file-display-inner">
+                      {% with fname=item.file_name|lower %}
+                      {% if '.pdf' in fname %}
+                        <div class="file-type-icon pdf"><i class="bi bi-file-earmark-pdf-fill"></i></div>
+                      {% elif '.doc' in fname or '.docx' in fname %}
+                        <div class="file-type-icon doc"><i class="bi bi-file-earmark-word-fill"></i></div>
+                      {% elif '.jpg' in fname or '.jpeg' in fname or '.png' in fname or '.gif' in fname or '.webp' in fname %}
+                        <div class="file-type-icon img"><i class="bi bi-file-earmark-image-fill"></i></div>
+                      {% elif '.ai' in fname or '.psd' in fname %}
+                        <div class="file-type-icon design"><i class="bi bi-file-earmark-richtext-fill"></i></div>
+                      {% else %}
+                        <div class="file-type-icon other"><i class="bi bi-file-earmark-fill"></i></div>
+                      {% endif %}
+                      {% endwith %}
+
+                      <div class="file-display-info">
+                        <div class="file-display-name">{{ item.file_name|default:"Uploaded file" }}</div>
+                        <div class="file-display-meta">
+                          {% with fname=item.file_name|lower %}
+                          {% if '.pdf' in fname %}PDF Document
+                          {% elif '.doc' in fname or '.docx' in fname %}Word Document
+                          {% elif '.jpg' in fname or '.jpeg' in fname %}JPEG Image
+                          {% elif '.png' in fname %}PNG Image
+                          {% elif '.ai' in fname %}Adobe Illustrator
+                          {% elif '.psd' in fname %}Photoshop File
+                          {% else %}Uploaded File{% endif %}
+                          {% endwith %}
+                          &bull; Attached to order
+                        </div>
+                      </div>
+
+                      <div class="file-display-actions">
+                        {% if item.uploaded_file %}
+                          {% with fname=item.file_name|lower %}
+                          <!-- PREVIEW button — different handler per type -->
+                          {% if '.jpg' in fname or '.jpeg' in fname or '.png' in fname or '.gif' in fname or '.webp' in fname %}
+                          <button class="file-btn preview-btn"
+                            onclick="previewImage('{{ item.uploaded_file.url }}','{{ item.file_name }}')">
+                            <i class="bi bi-eye"></i> Preview
+                          </button>
+                          {% elif '.pdf' in fname %}
+                          <button class="file-btn preview-btn"
+                            onclick="previewPDF('{{ item.uploaded_file.url }}','{{ item.file_name }}')">
+                            <i class="bi bi-eye"></i> Preview
+                          </button>
+                          {% endif %}
+                          {% endwith %}
+
+                          <!-- DOWNLOAD button always shown -->
+                          <a href="{{ item.uploaded_file.url }}"
+                             download="{{ item.file_name }}"
+                             class="file-btn download-btn">
+                            <i class="bi bi-download"></i> Download
+                          </a>
+                        {% else %}
+                          <span class="file-btn" style="opacity:.5;cursor:default;">
+                            <i class="bi bi-clock me-1"></i>Processing
+                          </span>
+                        {% endif %}
+                      </div>
+                    </div>
+                  </div>
+                  {% else %}
+                  <div class="no-file-box">
+                    <i class="bi bi-file-earmark-x me-2"></i>No file uploaded for this item
+                  </div>
+                  {% endif %}
+
+                </div>
+
+                <!-- Price -->
+                <div class="text-end" style="flex-shrink:0">
+                  <div class="fw-800" style="color:var(--blue);font-size:1.05rem">₹{{ item.total_price }}</div>
+                  <div style="font-size:0.78rem;color:var(--text-muted)">₹{{ item.unit_price }} ×{{ item.quantity }}</div>
+                </div>
+              </div>
+            </div>
+            {% endwith %}{% endfor %}
+          </div>
+        </div>
+
+        {% if order.delivery_address %}
+        <div class="form-card mb-4">
+          <div class="form-card-header"><div class="form-card-header-icon"><i class="bi bi-geo-alt"></i></div><h5>DELIVERY ADDRESS</h5></div>
+          <div class="form-card-body"><p style="color:var(--text-muted);margin:0">{{ order.delivery_address }}</p></div>
+        </div>
+        {% endif %}
+
+        {% if order.notes %}
+        <div class="form-card mb-4">
+          <div class="form-card-header"><div class="form-card-header-icon"><i class="bi bi-chat-text"></i></div><h5>SPECIAL INSTRUCTIONS</h5></div>
+          <div class="form-card-body"><p style="color:var(--text-muted);margin:0">{{ order.notes }}</p></div>
+        </div>
+        {% endif %}
+
+      </div>
+
+      <!-- Right sidebar -->
+      <div class="col-lg-4">
+        <div class="order-summary-card mb-3">
+          <div class="fw-800 mb-3" style="font-size:0.9rem;text-transform:uppercase;color:var(--navy)">Payment Summary</div>
+          <div class="summary-row"><span style="color:var(--text-muted)">Subtotal</span><span>₹{{ order.subtotal }}</span></div>
+          <div class="summary-row"><span style="color:var(--text-muted)">GST (18%)</span><span>₹{{ order.tax }}</span></div>
+          <div class="summary-row total"><span>Total Paid</span><span class="summary-total-amt">₹{{ order.total_amount }}</span></div>
+          <div class="mt-3 p-2" style="background:rgba(16,185,129,.07);border-radius:8px;font-size:0.78rem;color:var(--green);font-weight:700">
+            <i class="bi bi-check-circle me-1"></i>{{ order.get_payment_method_display }} – {{ order.payment_status|title }}
+          </div>
+        </div>
+        <div class="form-card p-3">
+          <div class="fw-800 mb-2" style="font-size:0.82rem;text-transform:uppercase;color:var(--navy)">Actions</div>
+          <a href="{% url 'order_tracking' order.order_number %}" class="btn-order-now w-100 mb-2 d-block text-center" style="text-decoration:none;border-radius:50px;padding:10px"><i class="bi bi-map me-2"></i>TRACK ORDER</a>
+          <a href="{% url 'order_list' %}" class="btn-add-cart w-100 mb-2 d-block text-center" style="text-decoration:none;border-radius:50px;padding:10px"><i class="bi bi-arrow-left me-2"></i>ALL ORDERS</a>
+          <a href="{% url 'services' %}" class="btn-add-cart w-100 d-block text-center" style="text-decoration:none;border-radius:50px;padding:10px"><i class="bi bi-plus me-2"></i>NEW ORDER</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══ FILE PREVIEW MODAL ══════════════════════════════════ -->
+<div class="modal fade" id="filePreviewModal" tabindex="-1">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content">
+
+      <!-- Header -->
+      <div class="modal-header">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-file-earmark" id="modalFileIcon" style="color:rgba(255,255,255,.7);font-size:1.1rem"></i>
+          <span class="fw-800" id="previewModalTitle" style="color:#fff;font-size:0.92rem"></span>
+        </div>
+        <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal"></button>
+      </div>
+
+      <!-- Body — PDF toolbar + canvas / image -->
+      <div class="modal-body p-0">
+
+        <!-- PDF toolbar (hidden for images) -->
+        <div class="pdf-toolbar" id="pdfToolbar" style="display:none!important">
+          <button onclick="changePage(-1)" id="btnPrev"><i class="bi bi-chevron-left"></i> Prev</button>
+          <span>Page</span>
+          <input type="number" id="pageNumInput" value="1" min="1" onchange="goToPage(this.value)">
+          <span class="pdf-page-count">/ <span id="pageCount">—</span></span>
+          <button onclick="changePage(1)" id="btnNext">Next <i class="bi bi-chevron-right"></i></button>
+          <div style="flex:1"></div>
+          <button onclick="changeZoom(-0.25)"><i class="bi bi-zoom-out"></i></button>
+          <span id="zoomLabel">100%</span>
+          <button onclick="changeZoom(0.25)"><i class="bi bi-zoom-in"></i></button>
+          <button onclick="rotatePDF()"><i class="bi bi-arrow-clockwise"></i></button>
+        </div>
+
+        <!-- PDF canvas container -->
+        <div id="pdfCanvasWrap" style="display:none">
+          <canvas id="pdfCanvas"></canvas>
+        </div>
+
+        <!-- Image container -->
+        <div id="imgPreviewWrap" style="display:none">
+          <img id="previewImg" src="" alt="preview">
+        </div>
+
+        <!-- Loading spinner -->
+        <div id="previewSpinner" style="background:#1a1a2e;min-height:400px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px">
+          <div class="spinner-border" style="color:var(--blue);width:3rem;height:3rem" role="status"></div>
+          <p style="color:rgba(255,255,255,.5);font-size:0.85rem;font-weight:600;margin:0">Loading preview...</p>
+        </div>
+
+        <!-- Error state -->
+        <div id="previewError" style="display:none;background:#1a1a2e;min-height:400px;align-items:center;justify-content:center;flex-direction:column;gap:12px">
+          <i class="bi bi-exclamation-triangle" style="font-size:3rem;color:#f59e0b"></i>
+          <p style="color:rgba(255,255,255,.7);font-weight:700;margin:0">Could not load preview</p>
+          <p style="color:rgba(255,255,255,.4);font-size:0.82rem;margin:0">Please use the Download button instead</p>
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer">
+        <a href="#" id="previewDownloadBtn" download
+           class="btn-order-now" style="text-decoration:none">
+          <i class="bi bi-download me-2"></i>DOWNLOAD FILE
+        </a>
+        <button type="button" class="btn-add-cart" data-bs-dismiss="modal">Close</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- PDF.js from CDN — renders PDFs directly in canvas, no iframe needed -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+// ── PDF.js setup ──────────────────────────────────────
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+let pdfDoc    = null;
+let pageNum   = 1;
+let pageScale = 1.5;
+let rotation  = 0;
+let currentDownloadUrl = '';
+let currentFileName    = '';
+
+// Show/hide helpers
+function showOnly(id) {
+  ['previewSpinner','pdfCanvasWrap','imgPreviewWrap','previewError'].forEach(el => {
+    const e = document.getElementById(el);
+    e.style.display = (el === id) ? (id === 'pdfCanvasWrap' ? 'flex' : 'flex') : 'none';
+    if (el === id) e.style.flexDirection = 'column';
+  });
+}
+
+// ── OPEN MODAL ────────────────────────────────────────
+function openModal(url, name) {
+  currentDownloadUrl = url;
+  currentFileName    = name;
+
+  const modal = new bootstrap.Modal(document.getElementById('filePreviewModal'));
+  document.getElementById('previewModalTitle').textContent = name;
+  document.getElementById('previewDownloadBtn').href     = url;
+  document.getElementById('previewDownloadBtn').download = name;
+
+  showOnly('previewSpinner');
+  document.getElementById('pdfToolbar').style.setProperty('display','none','important');
+  modal.show();
+}
+
+// ── IMAGE PREVIEW ─────────────────────────────────────
+function previewImage(url, name) {
+  openModal(url, name);
+  document.getElementById('modalFileIcon').className = 'bi bi-file-earmark-image';
+
+  const img = document.getElementById('previewImg');
+  img.onload  = () => showOnly('imgPreviewWrap');
+  img.onerror = () => showOnly('previewError');
+  img.src = url;
+
+  document.getElementById('imgPreviewWrap').style.display = 'flex';
+}
+
+// ── PDF PREVIEW (PDF.js canvas rendering) ─────────────
+function previewPDF(url, name) {
+  openModal(url, name);
+  document.getElementById('modalFileIcon').className = 'bi bi-file-earmark-pdf';
+
+  // Reset state
+  pdfDoc   = null;
+  pageNum  = 1;
+  rotation = 0;
+  pageScale = 1.5;
+
+  pdfjsLib.getDocument(url).promise.then(pdf => {
+    pdfDoc = pdf;
+    document.getElementById('pageCount').textContent = pdf.numPages;
+    document.getElementById('pageNumInput').max = pdf.numPages;
+    document.getElementById('btnPrev').disabled = true;
+    document.getElementById('btnNext').disabled = pdf.numPages <= 1;
+
+    document.getElementById('pdfToolbar').style.removeProperty('display');
+    renderPage(pageNum);
+
+  }).catch(err => {
+    console.error('PDF load error:', err);
+    showOnly('previewError');
+  });
+}
+
+function renderPage(num) {
+  showOnly('previewSpinner');
+  pdfDoc.getPage(num).then(page => {
+    const canvas  = document.getElementById('pdfCanvas');
+    const ctx     = canvas.getContext('2d');
+    const viewport = page.getViewport({ scale: pageScale, rotation: rotation });
+
+    canvas.height = viewport.height;
+    canvas.width  = viewport.width;
+
+    page.render({ canvasContext: ctx, viewport: viewport }).promise.then(() => {
+      showOnly('pdfCanvasWrap');
+      document.getElementById('pdfCanvasWrap').style.display = 'flex';
+      document.getElementById('pageNumInput').value = num;
+
+      // Update prev/next buttons
+      document.getElementById('btnPrev').disabled = (num <= 1);
+      document.getElementById('btnNext').disabled = (num >= pdfDoc.numPages);
+    });
+  });
+}
+
+function changePage(delta) {
+  const next = pageNum + delta;
+  if (next < 1 || next > pdfDoc.numPages) return;
+  pageNum = next;
+  renderPage(pageNum);
+}
+
+function goToPage(val) {
+  const n = parseInt(val);
+  if (!n || n < 1 || n > pdfDoc.numPages) return;
+  pageNum = n;
+  renderPage(pageNum);
+}
+
+function changeZoom(delta) {
+  pageScale = Math.min(3, Math.max(0.5, pageScale + delta));
+  document.getElementById('zoomLabel').textContent = Math.round(pageScale * 100 / 1.5) + '%';
+  renderPage(pageNum);
+}
+
+function rotatePDF() {
+  rotation = (rotation + 90) % 360;
+  renderPage(pageNum);
+}
+
+// Reset modal when closed
+document.getElementById('filePreviewModal').addEventListener('hidden.bs.modal', () => {
+  showOnly('previewSpinner');
+  document.getElementById('pdfToolbar').style.setProperty('display','none','important');
+  document.getElementById('previewImg').src = '';
+  pdfDoc = null;
+});
+</script>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Contact Us – PrintHub{% endblock %}
+{% block content %}
+<div class="page-hero"><div class="container"><p>GET IN TOUCH</p><h1>CONTACT <span>US</span></h1></div></div>
+<section class="section-pad">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-lg-5">
+        <div class="contact-info-wrap">
+          <div class="fw-800 mb-4" style="color:#fff;font-size:1.1rem;text-transform:uppercase;letter-spacing:.5px">Reach Us</div>
+          <div class="contact-info-item"><div class="contact-ico"><i class="bi bi-geo-alt-fill"></i></div><div><strong>Address</strong><p>123 Print Street, Kakinada,<br>Andhra Pradesh 533001</p></div></div>
+          <div class="contact-info-item"><div class="contact-ico"><i class="bi bi-telephone-fill"></i></div><div><strong>Phone</strong><p>+91 98765 43210</p></div></div>
+          <div class="contact-info-item"><div class="contact-ico"><i class="bi bi-envelope-fill"></i></div><div><strong>Email</strong><p>hello@printhub.in</p></div></div>
+          <div class="contact-info-item"><div class="contact-ico"><i class="bi bi-clock-fill"></i></div><div><strong>Working Hours</strong><p>Monday – Saturday<br>9:00 AM – 8:00 PM</p></div></div>
+        </div>
+      </div>
+      <div class="col-lg-7">
+        <div class="form-card">
+          <div class="form-card-header"><div class="form-card-header-icon"><i class="bi bi-envelope"></i></div><h5>SEND A MESSAGE</h5></div>
+          <div class="form-card-body">
+            <form method="POST">
+              {% csrf_token %}
+              <div class="row g-3">
+                <div class="col-md-6"><label class="form-label">FULL NAME</label><input type="text" name="name" class="ph-input" placeholder="Your name" required></div>
+                <div class="col-md-6"><label class="form-label">EMAIL</label><input type="email" name="email" class="ph-input" placeholder="your@email.com" required></div>
+                <div class="col-md-6"><label class="form-label">PHONE</label><input type="tel" name="phone" class="ph-input" placeholder="+91 XXXXX XXXXX"></div>
+                <div class="col-md-6"><label class="form-label">SUBJECT</label><select name="subject" class="ph-select"><option>General Inquiry</option><option>Order Support</option><option>Pricing</option><option>Bulk Orders</option><option>Technical Support</option></select></div>
+                <div class="col-12"><label class="form-label">MESSAGE</label><textarea name="message" class="ph-input" rows="5" placeholder="How can we help you?" required></textarea></div>
+                <div class="col-12"><button type="submit" class="btn-order-now w-100" style="border-radius:50px;padding:13px;font-size:0.95rem"><i class="bi bi-send me-2"></i>SEND MESSAGE</button></div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

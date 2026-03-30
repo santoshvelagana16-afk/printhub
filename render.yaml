@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: printhub
+    runtime: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn printhub.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120"
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: ".onrender.com"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: printhub-db
+          property: connectionString
+      - key: DJANGO_SUPERUSER_USERNAME
+        value: admin
+      - key: DJANGO_SUPERUSER_PASSWORD
+        value: admin123
+      - key: DJANGO_SUPERUSER_EMAIL
+        value: admin@printhub.in
+    disk:
+      name: printhub-media
+      mountPath: /opt/render/project/src/media
+      sizeGB: 1
+
+databases:
+  - name: printhub-db
+    databaseName: printhub
+    user: printhub
+    plan: free

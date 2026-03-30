@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block title %}Track Order #{{ order.order_number }} – PrintHub{% endblock %}
+{% block content %}
+<div class="page-hero"><div class="container"><p>REAL-TIME STATUS</p><h1>ORDER <span>TRACKING</span></h1></div></div>
+<section class="section-pad">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="form-card mb-4 text-center">
+          <div class="form-card-body">
+            <div class="fw-800 mb-1" style="font-size:0.75rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted)">ORDER NUMBER</div>
+            <div class="confirm-order-no mb-3"><i class="bi bi-receipt me-2"></i>#{{ order.order_number }}</div>
+            <span class="tracking-status-badge status-{{ order.status }}">
+              <i class="bi bi-{% if order.status == 'completed' %}bag-check{% elif order.status == 'processing' %}gear{% elif order.status == 'ready' %}box-seam{% elif order.status == 'cancelled' %}x-circle{% else %}clock{% endif %} me-2"></i>
+              {{ order.get_status_display }}
+            </span>
+            <div class="mt-4">
+              <div class="d-flex justify-content-between mb-1">
+                <span style="font-size:0.72rem;color:var(--text-muted);font-weight:700">Order placed</span>
+                <span style="font-size:0.72rem;color:var(--text-muted);font-weight:700">Completed</span>
+              </div>
+              <div class="track-progress"><div class="track-progress-bar" style="width:{{ order.get_status_percent }}%"></div></div>
+              <div class="track-steps mt-2">
+                <span class="track-step-label">Pending</span>
+                <span class="track-step-label">Confirmed</span>
+                <span class="track-step-label">Processing</span>
+                <span class="track-step-label">Ready</span>
+                <span class="track-step-label">Completed</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-card mb-4">
+          <div class="form-card-header"><div class="form-card-header-icon"><i class="bi bi-clock-history"></i></div><h5>ORDER TIMELINE</h5></div>
+          <div class="form-card-body">
+            <div class="timeline">
+              <div class="tl-item {% if order.status != 'cancelled' %}done{% endif %}">
+                <div class="tl-left"><div class="tl-dot"><i class="bi bi-check-lg"></i></div><div class="tl-line"></div></div>
+                <div class="tl-content"><strong>Order Placed</strong><p>{{ order.created_at|date:"d M Y, h:i A" }}</p></div>
+              </div>
+              <div class="tl-item {% if order.status in 'confirmed,processing,ready,completed' %}done{% elif order.status == 'pending' %}active{% endif %}">
+                <div class="tl-left"><div class="tl-dot"><i class="bi bi-check-lg"></i></div><div class="tl-line"></div></div>
+                <div class="tl-content"><strong>Order Confirmed</strong><p>Payment verified and order accepted</p></div>
+              </div>
+              <div class="tl-item {% if order.status in 'processing,ready,completed' %}done{% elif order.status == 'confirmed' %}active{% endif %}">
+                <div class="tl-left"><div class="tl-dot"><i class="bi bi-gear"></i></div><div class="tl-line"></div></div>
+                <div class="tl-content"><strong>Processing & Printing</strong><p>Your files are being printed</p></div>
+              </div>
+              <div class="tl-item {% if order.status in 'ready,completed' %}done{% elif order.status == 'processing' %}active{% endif %}">
+                <div class="tl-left"><div class="tl-dot"><i class="bi bi-box-seam"></i></div><div class="tl-line"></div></div>
+                <div class="tl-content"><strong>Ready for Pickup / Dispatch</strong><p>Your order is packed and ready</p></div>
+              </div>
+              <div class="tl-item {% if order.status == 'completed' %}done{% elif order.status == 'ready' %}active{% endif %}">
+                <div class="tl-left"><div class="tl-dot"><i class="bi bi-bag-check"></i></div></div>
+                <div class="tl-content"><strong>Completed</strong><p>Order delivered or collected</p></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+          <div class="col-sm-6"><div class="info-cell"><div class="lbl">Total Amount</div><div class="val" style="color:var(--blue)">₹{{ order.total_amount }}</div></div></div>
+          <div class="col-sm-6"><div class="info-cell"><div class="lbl">Payment Method</div><div class="val">{{ order.get_payment_method_display }}</div></div></div>
+          <div class="col-sm-6"><div class="info-cell"><div class="lbl">Items</div><div class="val">{{ order.items.count }} item{{ order.items.count|pluralize }}</div></div></div>
+          <div class="col-sm-6"><div class="info-cell"><div class="lbl">Payment Status</div><div class="val" style="color:var(--green)"><i class="bi bi-check-circle me-1"></i>{{ order.payment_status|title }}</div></div></div>
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap">
+          <a href="{% url 'order_detail' order.id %}" class="btn-order-now" style="text-decoration:none"><i class="bi bi-receipt me-2"></i>VIEW INVOICE</a>
+          <a href="{% url 'order_list' %}" class="btn-add-cart" style="text-decoration:none"><i class="bi bi-arrow-left me-2"></i>ALL ORDERS</a>
+          <a href="{% url 'contact' %}" class="btn-add-cart" style="text-decoration:none"><i class="bi bi-headset me-2"></i>GET HELP</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

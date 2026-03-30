@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}Order Confirmed – PrintHub{% endblock %}
+{% block content %}
+<section class="section-pad">
+  <div class="container">
+    <div class="confirm-wrap form-card p-5 text-center">
+      <div class="confirm-check"><i class="bi bi-check-lg"></i></div>
+      <h2 class="fw-800 mt-3" style="color:var(--navy)">Order Confirmed!</h2>
+      <p style="color:var(--text-muted);font-size:1rem">Thank you, <strong>{{ order.user.first_name|default:order.user.username }}</strong>! Your order has been placed.</p>
+      <div class="confirm-order-no"><i class="bi bi-receipt me-2"></i>Order #{{ order.order_number }}</div>
+      <div class="confirm-detail-grid text-start mt-4">
+        <div class="confirm-row"><span style="color:var(--text-muted);font-weight:700"><i class="bi bi-calendar me-2"></i>Order Date</span><span class="fw-700">{{ order.created_at|date:"d M Y, h:i A" }}</span></div>
+        <div class="confirm-row"><span style="color:var(--text-muted);font-weight:700"><i class="bi bi-credit-card me-2"></i>Payment</span><span class="fw-700" style="color:var(--green)"><i class="bi bi-check-circle me-1"></i>{{ order.get_payment_method_display }} – Paid</span></div>
+        <div class="confirm-row"><span style="color:var(--text-muted);font-weight:700"><i class="bi bi-box me-2"></i>Status</span><span class="badge status-{{ order.status }} px-3 py-2">{{ order.get_status_display }}</span></div>
+        <div class="confirm-row"><span style="color:var(--text-muted);font-weight:700"><i class="bi bi-currency-rupee me-2"></i>Total Paid</span><span class="fw-800" style="font-size:1.2rem;color:var(--navy)">₹{{ order.total_amount }}</span></div>
+      </div>
+      <div class="confirm-detail-grid text-start mt-3">
+        <div class="fw-800 mb-2" style="font-size:0.82rem;text-transform:uppercase;letter-spacing:.5px;color:var(--navy)">Items Ordered</div>
+        {% for item in order.items.all %}
+        <div class="confirm-row"><span style="color:var(--text-muted)">{{ item.service.name }} ×{{ item.quantity }}</span><span class="fw-700">₹{{ item.total_price }}</span></div>
+        {% endfor %}
+      </div>
+      <!-- Next Steps -->
+      <div class="mt-4 p-4" style="background:#fafbff;border-radius:14px;border:1px solid var(--border)">
+        <div class="fw-800 mb-3" style="font-size:0.82rem;text-transform:uppercase;letter-spacing:.5px;color:var(--navy)">What Happens Next?</div>
+        <div class="d-flex align-items-center justify-content-center gap-0">
+          <div style="text-align:center"><div style="width:36px;height:36px;background:var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;margin:0 auto 6px"><i class="bi bi-check"></i></div><div style="font-size:0.7rem;font-weight:700;color:var(--text-muted)">Placed</div></div>
+          <div style="width:40px;height:2px;background:var(--border);margin-bottom:22px"></div>
+          <div style="text-align:center"><div style="width:36px;height:36px;background:#e5e7eb;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#9ca3af;margin:0 auto 6px"><i class="bi bi-gear"></i></div><div style="font-size:0.7rem;font-weight:700;color:var(--text-muted)">Processing</div></div>
+          <div style="width:40px;height:2px;background:var(--border);margin-bottom:22px"></div>
+          <div style="text-align:center"><div style="width:36px;height:36px;background:#e5e7eb;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#9ca3af;margin:0 auto 6px"><i class="bi bi-printer"></i></div><div style="font-size:0.7rem;font-weight:700;color:var(--text-muted)">Printing</div></div>
+          <div style="width:40px;height:2px;background:var(--border);margin-bottom:22px"></div>
+          <div style="text-align:center"><div style="width:36px;height:36px;background:#e5e7eb;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#9ca3af;margin:0 auto 6px"><i class="bi bi-bag-check"></i></div><div style="font-size:0.7rem;font-weight:700;color:var(--text-muted)">Ready</div></div>
+        </div>
+      </div>
+      <div class="d-flex gap-2 justify-content-center mt-4 flex-wrap">
+        <a href="{% url 'order_tracking' order.order_number %}" class="btn-order-now" style="text-decoration:none"><i class="bi bi-map me-2"></i>TRACK ORDER</a>
+        <a href="{% url 'order_detail' order.id %}" class="btn-add-cart" style="text-decoration:none"><i class="bi bi-receipt me-2"></i>VIEW INVOICE</a>
+        <a href="{% url 'services' %}" class="btn-add-cart" style="text-decoration:none"><i class="bi bi-plus me-2"></i>NEW ORDER</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

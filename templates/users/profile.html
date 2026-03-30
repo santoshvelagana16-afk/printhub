@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}My Profile – PrintHub{% endblock %}
+{% block content %}
+<div class="page-hero"><div class="container"><p>ACCOUNT</p><h1>MY <span>PROFILE</span></h1></div></div>
+<section class="section-pad">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-lg-3">
+        <div class="profile-sidebar-card mb-3">
+          <div class="profile-avatar mb-3">{{ user.username|first|upper }}</div>
+          <h5 class="fw-800 mb-0">{{ user.get_full_name|default:user.username }}</h5>
+          <p style="font-size:0.82rem;color:var(--text-muted)">{{ user.email }}</p>
+          <div class="divider"></div>
+          <div class="d-flex justify-content-around text-center mt-2">
+            <div><div class="fw-800" style="color:var(--blue);font-size:1.2rem;">{{ orders|length }}</div><div style="font-size:0.75rem;color:var(--text-muted);font-weight:700;">ORDERS</div></div>
+          </div>
+        </div>
+        <div class="form-card p-2">
+          <a href="{% url 'profile' %}" class="sidebar-link active"><i class="bi bi-person"></i>My Profile</a>
+          <a href="{% url 'order_list' %}" class="sidebar-link"><i class="bi bi-bag"></i>My Orders</a>
+          <a href="{% url 'cart' %}" class="sidebar-link"><i class="bi bi-cart3"></i>My Cart</a>
+          <a href="{% url 'services' %}" class="sidebar-link"><i class="bi bi-grid"></i>Services</a>
+          <a href="{% url 'logout' %}" class="sidebar-link danger"><i class="bi bi-box-arrow-right"></i>Logout</a>
+        </div>
+      </div>
+      <div class="col-lg-9">
+        <div class="form-card mb-4">
+          <div class="form-card-header"><div class="form-card-header-icon"><i class="bi bi-pencil"></i></div><h5>EDIT PROFILE</h5></div>
+          <div class="form-card-body">
+            <form method="POST" enctype="multipart/form-data">
+              {% csrf_token %}
+              <div class="row g-3">
+                <div class="col-md-6"><label class="form-label">FIRST NAME</label><input type="text" name="first_name" class="ph-input" value="{{ form.first_name.value|default:user.first_name }}"></div>
+                <div class="col-md-6"><label class="form-label">LAST NAME</label><input type="text" name="last_name" class="ph-input" value="{{ form.last_name.value|default:user.last_name }}"></div>
+                <div class="col-12"><label class="form-label">EMAIL</label><input type="email" name="email" class="ph-input" value="{{ form.email.value|default:user.email }}"></div>
+                <div class="col-md-6"><label class="form-label">MOBILE</label><input type="tel" name="phone" class="ph-input" value="{{ form.phone.value|default:'' }}"></div>
+                <div class="col-md-6"><label class="form-label">CITY</label><input type="text" name="city" class="ph-input" value="{{ form.city.value|default:'' }}"></div>
+                <div class="col-md-6"><label class="form-label">STATE</label><input type="text" name="state" class="ph-input" value="{{ form.state.value|default:'' }}"></div>
+                <div class="col-md-6"><label class="form-label">PINCODE</label><input type="text" name="pincode" class="ph-input" value="{{ form.pincode.value|default:'' }}"></div>
+                <div class="col-12"><label class="form-label">ADDRESS</label><textarea name="address" class="ph-input" rows="2">{{ form.address.value|default:'' }}</textarea></div>
+                <div class="col-12"><button type="submit" class="btn-order-now px-4"><i class="bi bi-save me-2"></i>SAVE CHANGES</button></div>
+              </div>
+            </form>
+          </div>
+        </div>
+        {% if orders %}
+        <div class="form-card">
+          <div class="form-card-header"><div class="form-card-header-icon"><i class="bi bi-clock-history"></i></div><h5>RECENT ORDERS</h5></div>
+          <div class="form-card-body p-0">
+            {% for order in orders %}
+            <div class="order-row-card" style="border-radius:0;border-left:none;border-right:none;border-top:none;">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <span class="fw-800">#{{ order.order_number }}</span>
+                  <span class="badge status-{{ order.status }} ms-2 px-2 py-1" style="font-size:0.72rem;">{{ order.get_status_display }}</span>
+                  <div class="mt-1" style="font-size:0.8rem;color:var(--text-muted)">{{ order.created_at|date:"d M Y" }} &bull; ₹{{ order.total_amount }}</div>
+                </div>
+                <a href="{% url 'order_detail' order.id %}" class="btn-add-cart" style="font-size:0.8rem;padding:6px 16px;">View</a>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

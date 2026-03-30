@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}Our Services – PrintHub{% endblock %}
+{% block content %}
+
+<div class="page-hero">
+  <div class="container">
+    <p>PROFESSIONAL GRADE PRINTING & BINDING HUB</p>
+    <h1>OUR <span>SERVICES</span></h1>
+  </div>
+</div>
+
+<!-- SERVICE TABS -->
+<div class="service-tabs-bar">
+  <div class="container">
+    <div class="service-tabs">
+      <a href="{% url 'printing_service' %}" class="service-tab"><span class="tab-dot"></span>PRINTING</a>
+      <a href="{% url 'binding_service' %}" class="service-tab"><span class="tab-dot"></span>SPIRAL</a>
+      <a href="{% url 'custom_service' %}" class="service-tab"><span class="tab-dot"></span>CUSTOM <span class="tab-new ms-1">NEW</span></a>
+    </div>
+  </div>
+</div>
+
+<section class="section-pad">
+  <div class="container">
+    <div class="row g-4">
+      {% for category in categories %}
+      {% for service in category.services.all %}
+      {% if service.is_active %}
+      <div class="col-lg-4 col-md-6">
+        <div class="svc-card">
+          <div class="svc-card-icon blue"><i class="bi bi-{{ category.icon }}"></i></div>
+          <h5>{{ service.name }}</h5>
+          <p>{{ service.description }}</p>
+          <div class="svc-price-tag">From ₹{{ service.base_price }}</div>
+          <a href="{% if category.category_type == 'printing' %}{% url 'printing_service' %}{% elif category.category_type == 'binding' %}{% url 'binding_service' %}{% else %}{% url 'custom_service' %}{% endif %}" class="btn-svc mt-3"><i class="bi bi-arrow-right me-1"></i>Order Now</a>
+        </div>
+      </div>
+      {% endif %}
+      {% endfor %}
+      {% empty %}
+      <div class="col-12 empty-state"><i class="bi bi-inbox display-1"></i><h4>No services yet</h4></div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

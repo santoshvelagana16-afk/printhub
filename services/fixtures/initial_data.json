@@ -1,0 +1,42 @@
+[
+  {"model": "services.servicecategory", "pk": 1, "fields": {"name": "Document Printing", "slug": "document-printing", "category_type": "printing", "description": "High-quality printing for all your documents, reports, and presentations.", "icon": "bi-printer", "is_active": true}},
+  {"model": "services.servicecategory", "pk": 2, "fields": {"name": "Spiral Binding", "slug": "spiral-binding", "category_type": "binding", "description": "Professional binding solutions for reports, theses, and presentations.", "icon": "bi-journals", "is_active": true}},
+  {"model": "services.servicecategory", "pk": 3, "fields": {"name": "Custom Printing", "slug": "custom-printing", "category_type": "custom", "description": "Personalised merchandise and custom print products with your design.", "icon": "bi-palette", "is_active": true}},
+
+  {"model": "services.service", "pk": 1, "fields": {"category": 1, "name": "Standard Document Print", "description": "B&W and colour printing for A4 documents.", "base_price": "0.50", "is_active": true, "image": null}},
+  {"model": "services.service", "pk": 2, "fields": {"category": 1, "name": "Large Format Print", "description": "A3 and larger size printing for posters and charts.", "base_price": "2.00", "is_active": true, "image": null}},
+  {"model": "services.service", "pk": 3, "fields": {"category": 2, "name": "Spiral Binding Service", "description": "Spiral, comb, tape and hard-cover binding options.", "base_price": "30.00", "is_active": true, "image": null}},
+  {"model": "services.service", "pk": 4, "fields": {"category": 3, "name": "Custom Merchandise", "description": "T-shirts, mugs, photo prints, posters and visiting cards.", "base_price": "199.00", "is_active": true, "image": null}},
+
+  {"model": "services.printingoption", "pk": 1,  "fields": {"service": 1, "page_size": "A4", "color_type": "bw",    "sides": "single", "price_per_page": "0.50"}},
+  {"model": "services.printingoption", "pk": 2,  "fields": {"service": 1, "page_size": "A4", "color_type": "bw",    "sides": "double", "price_per_page": "0.90"}},
+  {"model": "services.printingoption", "pk": 3,  "fields": {"service": 1, "page_size": "A4", "color_type": "color", "sides": "single", "price_per_page": "3.00"}},
+  {"model": "services.printingoption", "pk": 4,  "fields": {"service": 1, "page_size": "A4", "color_type": "color", "sides": "double", "price_per_page": "5.50"}},
+  {"model": "services.printingoption", "pk": 5,  "fields": {"service": 1, "page_size": "A3", "color_type": "bw",    "sides": "single", "price_per_page": "1.00"}},
+  {"model": "services.printingoption", "pk": 6,  "fields": {"service": 1, "page_size": "A3", "color_type": "color", "sides": "single", "price_per_page": "6.00"}},
+  {"model": "services.printingoption", "pk": 7,  "fields": {"service": 1, "page_size": "Letter", "color_type": "bw",    "sides": "single", "price_per_page": "0.50"}},
+  {"model": "services.printingoption", "pk": 8,  "fields": {"service": 1, "page_size": "Letter", "color_type": "color", "sides": "single", "price_per_page": "3.00"}},
+  {"model": "services.printingoption", "pk": 9,  "fields": {"service": 1, "page_size": "Legal", "color_type": "bw",    "sides": "single", "price_per_page": "0.75"}},
+  {"model": "services.printingoption", "pk": 10, "fields": {"service": 1, "page_size": "Legal", "color_type": "color", "sides": "single", "price_per_page": "4.00"}},
+  {"model": "services.printingoption", "pk": 11, "fields": {"service": 2, "page_size": "A3", "color_type": "bw",    "sides": "single", "price_per_page": "1.50"}},
+  {"model": "services.printingoption", "pk": 12, "fields": {"service": 2, "page_size": "A3", "color_type": "color", "sides": "single", "price_per_page": "8.00"}},
+
+  {"model": "services.bindingoption", "pk": 1, "fields": {"service": 3, "binding_type": "spiral", "price": "30.00"}},
+  {"model": "services.bindingoption", "pk": 2, "fields": {"service": 3, "binding_type": "comb",   "price": "25.00"}},
+  {"model": "services.bindingoption", "pk": 3, "fields": {"service": 3, "binding_type": "tape",   "price": "20.00"}},
+  {"model": "services.bindingoption", "pk": 4, "fields": {"service": 3, "binding_type": "hard",   "price": "80.00"}},
+
+  {"model": "services.customprintoption", "pk": 1,  "fields": {"service": 4, "product_type": "tshirt",       "size": "S",   "price": "299.00"}},
+  {"model": "services.customprintoption", "pk": 2,  "fields": {"service": 4, "product_type": "tshirt",       "size": "M",   "price": "299.00"}},
+  {"model": "services.customprintoption", "pk": 3,  "fields": {"service": 4, "product_type": "tshirt",       "size": "L",   "price": "299.00"}},
+  {"model": "services.customprintoption", "pk": 4,  "fields": {"service": 4, "product_type": "tshirt",       "size": "XL",  "price": "349.00"}},
+  {"model": "services.customprintoption", "pk": 5,  "fields": {"service": 4, "product_type": "tshirt",       "size": "XXL", "price": "349.00"}},
+  {"model": "services.customprintoption", "pk": 6,  "fields": {"service": 4, "product_type": "mug",          "size": "M",   "price": "249.00"}},
+  {"model": "services.customprintoption", "pk": 7,  "fields": {"service": 4, "product_type": "photo",        "size": "4x6", "price": "25.00"}},
+  {"model": "services.customprintoption", "pk": 8,  "fields": {"service": 4, "product_type": "photo",        "size": "5x7", "price": "45.00"}},
+  {"model": "services.customprintoption", "pk": 9,  "fields": {"service": 4, "product_type": "photo",        "size": "8x10","price": "90.00"}},
+  {"model": "services.customprintoption", "pk": 10, "fields": {"service": 4, "product_type": "poster",       "size": "A4",  "price": "80.00"}},
+  {"model": "services.customprintoption", "pk": 11, "fields": {"service": 4, "product_type": "poster",       "size": "A3",  "price": "150.00"}},
+  {"model": "services.customprintoption", "pk": 12, "fields": {"service": 4, "product_type": "visiting_card","size": "S",   "price": "199.00"}},
+  {"model": "services.customprintoption", "pk": 13, "fields": {"service": 4, "product_type": "banner",       "size": "custom","price": "500.00"}}
+]
